@@ -52,7 +52,7 @@ export default function LandingSectionScreen(): React.JSX.Element {
           left: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(ellipse at center, rgba(255,255,255,0.07) 0%, transparent 70%)",
+            "radial-gradient(ellipse at center, rgba(196,106,85,0.15) 0%, transparent 70%)",
           filter: "blur(40px)",
         }}
       />

@@ -8,6 +8,7 @@ import {
   useSpring,
 } from "framer-motion";
 import { useScrollContainer } from "@/app/context/ScrollContext";
+import LineWaves from "@/app/design/LineWaves";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -34,10 +35,47 @@ const FEATURES = [
   },
 ];
 
+// Each card gets a unique entrance recipe based on its grid position
+const CARD_CONFIGS = [
+  // Card 0 — top-left: slides from left + rotates in
+  {
+    yRange:       [60, 0]   as [number, number],
+    xRange:       [-60, 0]  as [number, number],
+    rotateRange:  [-8, 0]   as [number, number],
+    scaleRange:   [0.88, 1] as [number, number],
+    skewRange:    [0, 0]    as [number, number],
+  },
+  // Card 1 — top-right: slides from right + rotates in
+  {
+    yRange:       [60, 0]   as [number, number],
+    xRange:       [60, 0]   as [number, number],
+    rotateRange:  [8, 0]    as [number, number],
+    scaleRange:   [0.88, 1] as [number, number],
+    skewRange:    [0, 0]    as [number, number],
+  },
+  // Card 2 — bottom-left: rises with a skew wipe
+  {
+    yRange:       [80, 0]   as [number, number],
+    xRange:       [0, 0]    as [number, number],
+    rotateRange:  [0, 0]    as [number, number],
+    scaleRange:   [0.82, 1] as [number, number],
+    skewRange:    [-6, 0]   as [number, number],
+  },
+  // Card 3 — bottom-right: drops in from above with scale
+  {
+    yRange:       [-50, 0]  as [number, number],
+    xRange:       [0, 0]    as [number, number],
+    rotateRange:  [5, 0]    as [number, number],
+    scaleRange:   [0.9, 1]  as [number, number],
+    skewRange:    [4, 0]    as [number, number],
+  },
+];
+
 function FeatureCard({
   index,
   title,
   body,
+  i,
 }: {
   index: string;
   title: string;
@@ -46,40 +84,72 @@ function FeatureCard({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const scrollContainer = useScrollContainer();
+  const cfg = i % 2 === 0 ? CARD_CONFIGS[0] : CARD_CONFIGS[1];
 
   const { scrollYProgress } = useScroll({
     target: ref,
     container: scrollContainer,
-    offset: ["0 1", "0.6 1"],
+    offset: ["0 1", "0.75 1"],
   });
 
-  const opacity = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1]), {
-    stiffness: 80,
-    damping: 20,
-  });
-  const y = useSpring(useTransform(scrollYProgress, [0, 1], [48, 0]), {
-    stiffness: 80,
-    damping: 20,
-  });
+  const springCfg = { stiffness: 70, damping: 18 };
+
+  const opacity = useSpring(useTransform(scrollYProgress, [0, 0.6], [0, 1]),   springCfg);
+  const y       = useSpring(useTransform(scrollYProgress, [0, 1], cfg.yRange),  springCfg);
+  const x       = useSpring(useTransform(scrollYProgress, [0, 1], cfg.xRange),  springCfg);
+  const rotate  = useSpring(useTransform(scrollYProgress, [0, 1], cfg.rotateRange), springCfg);
+  const scale   = useSpring(useTransform(scrollYProgress, [0, 1], cfg.scaleRange),  springCfg);
+  const skewX   = useSpring(useTransform(scrollYProgress, [0, 1], cfg.skewRange),   springCfg);
+
+  // Inner content staggers in after the card itself arrives
+  const contentOpacity = useTransform(scrollYProgress, [0.3, 0.85], [0, 1]);
+  const contentY       = useTransform(scrollYProgress, [0.3, 0.85], [12, 0]);
 
   return (
     <motion.div
       ref={ref}
-      style={{ opacity, y }}
-      className="group relative flex flex-col gap-4 rounded-2xl border border-white/8 bg-white/4 backdrop-blur-sm p-8 hover:border-white/15 hover:bg-white/6 transition-colors duration-300"
+      style={{ opacity, y, x, rotate, scale, skewX }}
+      className="group relative flex flex-col gap-4 rounded-2xl border border-white/8 bg-white/4 backdrop-blur-sm p-8 hover:border-white/15 hover:bg-white/6 transition-colors duration-300 overflow-hidden"
     >
-      <span className="text-xs font-semibold tracking-widest text-white/25 uppercase">
+      {/* Accent corner glow */}
+      <div
+        className="absolute -top-10 -right-10 w-32 h-32 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: "radial-gradient(circle, rgba(196,106,85,0.15) 0%, transparent 70%)" }}
+      />
+
+      {/* Index */}
+      <motion.span
+        style={{ opacity: contentOpacity, y: contentY, color: "#C46A55" }}
+        className="text-xs font-semibold tracking-widest uppercase"
+      >
         {index}
-      </span>
-      <h3 className="text-white font-bold text-lg leading-snug tracking-tight">
+      </motion.span>
+
+      {/* Title */}
+      <motion.h3
+        style={{ opacity: contentOpacity, y: contentY }}
+        className="text-white font-bold text-lg leading-snug tracking-tight"
+      >
         {title}
-      </h3>
-      <p className="text-white/45 text-sm leading-relaxed tracking-tight">
+      </motion.h3>
+
+      {/* Body */}
+      <motion.p
+        style={{ opacity: contentOpacity, y: contentY }}
+        className="text-white/45 text-sm leading-relaxed tracking-tight"
+      >
         {body}
-      </p>
-      <div className="absolute top-0 right-0 w-16 h-16 rounded-tr-2xl overflow-hidden pointer-events-none">
-        <div className="absolute -top-8 -right-8 w-16 h-16 rounded-full bg-white/5 blur-xl" />
-      </div>
+      </motion.p>
+
+      {/* Bottom accent line that grows in */}
+      <motion.div
+        className="absolute bottom-0 left-0 h-px"
+        style={{
+          backgroundColor: "#C46A55",
+          width: useTransform(scrollYProgress, [0.4, 1], ["0%", "100%"]),
+          opacity: useTransform(scrollYProgress, [0.4, 0.6], [0, 0.4]),
+        }}
+      />
     </motion.div>
   );
 }
@@ -116,10 +186,33 @@ export default function FeaturesSectionScreen(): React.JSX.Element {
           left: "50%",
           transform: "translate(-50%, 0)",
           background:
-            "radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 70%)",
+            "radial-gradient(ellipse at center, rgba(196,106,85,0.08) 0%, transparent 70%)",
           filter: "blur(60px)",
         }}
       />
+
+      {/* LineWaves background */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full opacity-30 pointer-events-none"
+        style={{ zIndex: 0, opacity: 0.05 }}
+      >
+        <LineWaves
+          speed={0.2}
+          innerLineCount={28}
+          outerLineCount={32}
+          warpIntensity={0.7}
+          rotation={-45}
+          edgeFadeWidth={0.0}
+          colorCycleSpeed={0.8}
+          brightness={0.25}
+          color1="#C46A55"
+          color2="#C46A55"
+          color3="#C46A55"
+          enableMouseInteraction={false}
+          mouseInfluence={0}
+        />
+      </div>
 
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col gap-16">
 
@@ -147,7 +240,7 @@ export default function FeaturesSectionScreen(): React.JSX.Element {
               className="block"
               style={{
                 background:
-                  "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
+                  "linear-gradient(135deg, #C46A55 0%, #d4856e 50%, #e8a090 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",

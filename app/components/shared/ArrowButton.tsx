@@ -10,8 +10,8 @@ interface ArrowButtonProps {
 export default function ArrowButton({ label }: ArrowButtonProps): React.JSX.Element {
   return (
     <motion.button
-      className="inline-flex items-center gap-2 bg-black text-white rounded-full px-6 py-3 text-base font-semibold cursor-pointer select-none"
-      style={{ verticalAlign: "middle" }}
+      className="inline-flex items-center gap-2 text-white rounded-full px-6 py-3 text-base font-semibold cursor-pointer select-none"
+      style={{ verticalAlign: "middle", backgroundColor: "#C46A55" }}
       whileHover="hovered"
       whileTap={{ scale: 0.95 }}
       transition={{ type: "spring", stiffness: 400, damping: 20 }}

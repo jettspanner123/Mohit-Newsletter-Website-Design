@@ -20,7 +20,7 @@ export default function Navbar(): React.JSX.Element {
       {/* Logo / wordmark */}
       <div className="relative flex items-center gap-2.5">
         {/* Small accent dot */}
-        <span className="h-2 w-2 rounded-full bg-white/80" />
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#C46A55" }} />
         <span className="text-white text-sm font-semibold tracking-tight leading-none">
           THAtha{" "}
           <span className="text-white/40 font-normal">
@@ -45,7 +45,8 @@ export default function Navbar(): React.JSX.Element {
       {/* CTA */}
       <motion.a
         href="#"
-        className="relative text-black bg-white rounded-full px-4 py-1.5 text-xs font-semibold tracking-tight cursor-pointer"
+        className="relative text-white rounded-full px-4 py-1.5 text-xs font-semibold tracking-tight cursor-pointer"
+        style={{ backgroundColor: "#C46A55" }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.96 }}
         transition={{ type: "spring", stiffness: 400, damping: 20 }}
